@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <rect x="32" y="32" width="960" height="960" rx="216" fill="#2F5D8C"/>
+  <!-- motion lines: the file is being swiped to the right -->
+  <g stroke="#F4F1EA" stroke-linecap="round" stroke-width="44" opacity="0.55">
+    <line x1="170" y1="420" x2="330" y2="420"/>
+    <line x1="210" y1="520" x2="330" y2="520"/>
+    <line x1="250" y1="620" x2="330" y2="620"/>
+  </g>
+  <!-- file -->
+  <g transform="rotate(8 600 512)">
+    <path d="M420 250 H660 L790 380 V760 a32 32 0 0 1 -32 32 H420 a32 32 0 0 1 -32 -32 V282 a32 32 0 0 1 32 -32 Z" fill="#F4F1EA"/>
+    <path d="M660 250 V350 a30 30 0 0 0 30 30 H790 Z" fill="#C9C2B2"/>
+  </g>
+</svg>

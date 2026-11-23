@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Dustr</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Home -->
+  <section id="home" class="view" hidden>
+    <button class="icon-btn corner" id="home-settings" title="Settings" aria-label="Settings"></button>
+    <div class="home-center">
+      <img src="logo.svg" class="logo" alt="" width="96" height="96" />
+      <h1>Dustr</h1>
+      <p class="muted">Swipe through a folder to clean it out.</p>
+      <button class="btn primary" id="choose-folder">Choose folder</button>
+      <label class="check"><input type="checkbox" id="include-subfolders" /> Include subfolders</label>
+    </div>
+    <p class="footer muted">Free and open source · GPL-3.0</p>
+  </section>
+
+  <!-- Session -->
+  <section id="session" class="view" hidden>
+    <header class="topbar">
+      <button class="icon-btn" id="session-end" title="End session (Esc)" aria-label="End session"></button>
+      <div class="topbar-title">
+        <div id="folder-name" class="ellipsis"></div>
+        <div id="progress" class="muted small"></div>
+      </div>
+      <button class="icon-btn" id="session-settings" title="Settings" aria-label="Settings"></button>
+    </header>
+
+    <div class="stage" id="stage">
+      <div class="edge-bar" data-dir="up"></div>
+      <div class="edge-bar" data-dir="right"></div>
+      <div class="edge-bar" data-dir="down"></div>
+      <div class="edge-bar" data-dir="left"></div>
+      <div class="zone" data-dir="up"></div>
+      <div class="zone" data-dir="right"></div>
+      <div class="zone" data-dir="down"></div>
+      <div class="zone" data-dir="left"></div>
+      <div class="card-slot" id="card-slot">
+        <article class="card" id="card">
+          <div class="preview" id="preview"></div>
+          <div class="card-info">
+            <div class="file-name" id="file-name"></div>
+            <div class="file-path muted" id="file-path"></div>
+            <div class="file-meta muted" id="file-meta"></div>
+            <button class="btn small ghost" id="open-location"></button>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <footer class="session-foot">
+      <button class="btn small ghost" id="undo" disabled></button>
+      <span class="muted small" id="key-hint"></span>
+    </footer>
+  </section>
+
+  <!-- Summary -->
+  <section id="summary" class="view" hidden>
+    <div class="home-center">
+      <h2>All dusted</h2>
+      <p class="muted" id="summary-folder"></p>
+      <table class="summary-table" id="summary-table"></table>
+      <button class="btn primary" id="summary-done">Done</button>
+    </div>
+  </section>
+
+  <!-- Settings -->
+  <section id="settings" class="view" hidden>
+    <header class="topbar">
+      <button class="icon-btn" id="settings-back" title="Back" aria-label="Back"></button>
+      <div class="topbar-title"><div>Settings</div></div>
+      <span class="icon-btn-spacer"></span>
+    </header>
+    <div class="settings-body" id="settings-body"></div>
+  </section>
+
+  <!-- Overlays -->
+  <div class="overlay" id="overlay" hidden>
+    <div class="dialog" id="dialog"></div>
+  </div>
+  <div class="toast" id="toast" hidden>
+    <span id="toast-text"></span>
+    <div class="toast-bar" id="toast-bar"></div>
+  </div>
+  <div class="fx-layer" id="fx-layer"></div>
+
+  <script src="icons.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
