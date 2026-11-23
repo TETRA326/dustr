@@ -20,6 +20,7 @@ const EXT = {
   pdf: "pdf",
   text: "txt md markdown log csv tsv json jsonc xml yml yaml toml ini cfg conf env js mjs cjs ts tsx jsx py rs c h cpp hpp cc cs java kt go rb php html htm css scss less sh bash zsh ps1 psm1 bat cmd sql lua r swift vb gitignore gitattributes editorconfig srt vtt properties gradle nfo reg",
 };
+const OFFICE = new Set("docx docm dotx xlsx xlsm xltx pptx pptm ppsx".split(" "));
 const KIND_BY_EXT = {};
 for (const [kind, list] of Object.entries(EXT)) for (const e of list.split(" ")) KIND_BY_EXT[e] = kind;
 
@@ -159,6 +160,7 @@ function kindOf(f) {
   const k = KIND_BY_EXT[f.ext];
   if (k) return k;
   if (platform === "windows" && settings.nativePreviews) return "native";
+  if (OFFICE.has(f.ext)) return "office";
   return "other";
 }
 function previewRect() {
@@ -172,7 +174,8 @@ const native = {
   current: null,       // path currently shown natively
   prepare(path) {
     if (!this.prepared.has(path)) {
-      this.prepared.set(path, invoke("preview_prepare", { id: path, path, rect: previewRect() }).catch(() => false));
+      this.prepared.set(path, invoke("preview_prepare", { id: path, path, rect: previewRect() })
+        .then(() => ({ ok: true }), (error) => ({ ok: false, error: String(error) })));
     }
     return this.prepared.get(path);
   },
@@ -250,14 +253,18 @@ async function renderPreview(f) {
     await renderText(f, p);
   } else if (kind === "native") {
     p.append(el("div", { class: "loading" }, "Loading preview…"));
-    const ok = await native.prepare(f.path);
+    const res = await native.prepare(f.path);
     if (!stillCurrent()) return;
-    if (ok) {
+    if (res.ok) {
       p.innerHTML = "";
       await native.show(f.path);
+    } else if (OFFICE.has(f.ext)) {
+      await renderOffice(f, p, res.error);
     } else {
-      await renderFallback(f, p);
+      await renderFallback(f, p, res.error);
     }
+  } else if (kind === "office") {
+    await renderOffice(f, p);
   } else {
     await renderFallback(f, p);
   }
@@ -278,14 +285,41 @@ async function renderText(f, p) {
   }
 }
 
-async function renderFallback(f, p) {
+// Built-in Office reader: text for documents and slides, a grid for spreadsheets.
+async function renderOffice(f, p, reason) {
+  let r;
+  try {
+    r = await invoke("office_preview", { path: f.path });
+  } catch (e) {
+    if (session.file !== f) return;
+    p.innerHTML = "";
+    p.append(genericPreview(f, reason || String(e)));
+    return;
+  }
+  if (session.file !== f) return;
+  p.innerHTML = "";
+  const box = el("div", { class: "office" });
+  if (r.image) box.append(el("img", { class: "thumb", src: r.image, alt: "" }));
+  if (r.rows && r.rows.length) {
+    const t = el("table", { class: "sheet" });
+    for (const row of r.rows) t.append(el("tr", {}, ...row.map((c) => el("td", {}, c))));
+    box.append(t);
+  } else if (r.text) {
+    box.append(el("pre", { class: "doc" }, r.text));
+  } else if (!r.image) {
+    box.append(genericPreview(f, "Empty document"));
+  }
+  p.append(box, el("span", { class: "badge", title: reason || "" }, "Basic preview"));
+}
+
+async function renderFallback(f, p, note) {
   // Small unknown files might be plain text.
   if (f.size > 0 && f.size < 2 * 1024 * 1024) {
     if (await renderText(f, p)) return;
     if (session.file !== f) return;
   }
   p.innerHTML = "";
-  p.append(genericPreview(f));
+  p.append(genericPreview(f, note));
 }
 
 function preloadAhead() {

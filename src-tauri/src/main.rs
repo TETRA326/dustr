@@ -3,6 +3,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 mod fsops;
+mod office;
 mod preview;
 mod settings;
 mod shellmenu;
@@ -70,6 +71,7 @@ fn main() {
             fsops::path_exists,
             fsops::read_text,
             fsops::open_location,
+            office::office_preview,
             shellmenu::shell_menu_set,
             shellmenu::shell_menu_status,
             preview::preview_prepare,

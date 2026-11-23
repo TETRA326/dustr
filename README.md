@@ -35,6 +35,9 @@ Images, video, audio, PDF and text are shown directly. On Windows, Office docume
 preview handler use the same previews as Explorer's preview pane. They load in the background a few files ahead and are view-only,
 so the keyboard always stays with Dustr.
 
+When no preview handler is installed (for example, without Microsoft Office), and on other platforms, .docx, .xlsx and .pptx
+files get a basic built-in preview: document and slide text, or the first sheet as a grid.
+
 ## Settings
 
 Theme (light / dark / system) · animations · direction mapping · arrow keys and/or WASD · move destination ·
@@ -70,6 +73,7 @@ src-tauri/src/
   main.rs             command-line args, command registration
   fsops.rs            list, move, recycle, restore, delete
   preview.rs          Windows preview-handler host
+  office.rs           built-in docx/xlsx/pptx reader
   shellmenu.rs        Explorer context menu (HKCU)
   settings.rs         settings file
 src-tauri/windows/hooks.nsh   installer hooks for the context menu

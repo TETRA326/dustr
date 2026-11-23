@@ -48,7 +48,7 @@ mod imp {
     }
 
     enum Cmd {
-        Prepare { id: String, path: String, owner: isize, rect: PRect, reply: mpsc::Sender<bool> },
+        Prepare { id: String, path: String, owner: isize, rect: PRect, reply: mpsc::Sender<Result<(), String>> },
         Show { id: String, rect: PRect },
         Hide { id: String },
         Release { id: String },
@@ -133,17 +133,13 @@ mod imp {
         match cmd {
             Cmd::Prepare { id, path, owner, rect, reply } => {
                 if hosts.contains_key(&id) {
-                    let _ = reply.send(true);
+                    let _ = reply.send(Ok(()));
                     return;
                 }
-                let ok = match create_host(&path, owner, rect, hinstance) {
-                    Some(host) => {
-                        hosts.insert(id, host);
-                        true
-                    }
-                    None => false,
-                };
-                let _ = reply.send(ok);
+                let res = create_host(&path, owner, rect, hinstance).map(|host| {
+                    hosts.insert(id, host);
+                });
+                let _ = reply.send(res);
             }
             Cmd::Show { id, rect } => {
                 for (other, h) in hosts.iter() {
@@ -192,8 +188,12 @@ mod imp {
         let _ = DestroyWindow(h.hwnd);
     }
 
-    unsafe fn handler_clsid(path: &str) -> Option<windows::core::GUID> {
-        let ext = std::path::Path::new(path).extension()?.to_string_lossy().to_string();
+    unsafe fn handler_clsid(path: &str) -> Result<windows::core::GUID, String> {
+        let ext = std::path::Path::new(path)
+            .extension()
+            .map(|e| e.to_string_lossy().to_string())
+            .unwrap_or_default();
+        let missing = format!("No Windows preview handler is installed for .{ext} files");
         let ext = HSTRING::from(format!(".{ext}"));
         let mut buf = [0u16; 64];
         let mut len = buf.len() as u32;
@@ -206,8 +206,8 @@ mod imp {
             &mut len,
         )
         .ok()
-        .ok()?;
-        CLSIDFromString(PCWSTR(buf.as_ptr())).ok()
+        .map_err(|_| missing.clone())?;
+        CLSIDFromString(PCWSTR(buf.as_ptr())).map_err(|_| missing)
     }
 
     unsafe fn init_handler(handler: &IPreviewHandler, path: &str) -> bool {
@@ -236,13 +236,13 @@ mod imp {
         false
     }
 
-    unsafe fn create_host(path: &str, owner: isize, rect: PRect, hinstance: HINSTANCE) -> Option<Host> {
+    unsafe fn create_host(path: &str, owner: isize, rect: PRect, hinstance: HINSTANCE) -> Result<Host, String> {
         let clsid = handler_clsid(path)?;
         let handler: IPreviewHandler = CoCreateInstance(&clsid, None, CLSCTX_LOCAL_SERVER)
             .or_else(|_| CoCreateInstance(&clsid, None, CLSCTX_INPROC_SERVER))
-            .ok()?;
+            .map_err(|e| format!("The preview handler {clsid:?} could not be started ({e})"))?;
         if !init_handler(&handler, path) {
-            return None;
+            return Err("The preview handler could not open this file".into());
         }
         let (w, h) = (rect.w.max(64), rect.h.max(64));
         let hwnd = CreateWindowExW(
@@ -259,14 +259,14 @@ mod imp {
             Some(hinstance),
             None,
         )
-        .ok()?;
+        .map_err(|e| format!("Could not create the preview window ({e})"))?;
         let r = RECT { left: 0, top: 0, right: w, bottom: h };
-        if handler.SetWindow(hwnd, &r).is_err() || handler.DoPreview().is_err() {
+        if let Err(e) = handler.SetWindow(hwnd, &r).and_then(|_| handler.DoPreview()) {
             let _ = handler.Unload();
             let _ = DestroyWindow(hwnd);
-            return None;
+            return Err(format!("The preview handler failed to render this file ({e})"));
         }
-        Some(Host { hwnd, handler })
+        Ok(Host { hwnd, handler })
     }
 
     /// Captures the on-screen pixels of a visible host window as a BMP data URL.
@@ -352,15 +352,15 @@ mod imp {
         }
     }
 
-    pub async fn prepare(window: tauri::WebviewWindow, id: String, path: String, rect: CssRect) -> bool {
-        let Ok(owner) = window.hwnd() else { return false };
+    pub async fn prepare(window: tauri::WebviewWindow, id: String, path: String, rect: CssRect) -> Result<(), String> {
+        let owner = window.hwnd().map_err(|e| e.to_string())?;
         let owner = owner.0 as isize;
         let rect = physical(&window, rect, false);
         let (tx, rx) = mpsc::channel();
         send(Cmd::Prepare { id, path, owner, rect, reply: tx });
-        tauri::async_runtime::spawn_blocking(move || rx.recv().unwrap_or(false))
+        tauri::async_runtime::spawn_blocking(move || rx.recv().unwrap_or(Err("Preview thread stopped".into())))
             .await
-            .unwrap_or(false)
+            .unwrap_or_else(|e| Err(e.to_string()))
     }
 
     pub fn show(window: tauri::WebviewWindow, id: String, rect: CssRect) {
@@ -393,13 +393,13 @@ mod imp {
 }
 
 #[tauri::command]
-pub async fn preview_prepare(window: tauri::WebviewWindow, id: String, path: String, rect: CssRect) -> bool {
+pub async fn preview_prepare(window: tauri::WebviewWindow, id: String, path: String, rect: CssRect) -> Result<(), String> {
     #[cfg(windows)]
     return imp::prepare(window, id, path, rect).await;
     #[cfg(not(windows))]
     {
         let _ = (window, id, path, rect);
-        false
+        Err("Native previews are only available on Windows".into())
     }
 }
 
