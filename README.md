@@ -2,43 +2,45 @@
 
 # Dustr
 
-FOSS app vibe-coded to make file management more intuative.
+A free, open-source (and vibe-coded) app that makes cleaning out your files quick and painless:
+see one file at a time and press an arrow key to decide what happens to it.
 
 ## Install
 
-**[Download the latest version](https://github.com/TETRA326/dustr/releases/latest/download/Dustr-Setup.exe)**
+**[Download the latest version](https://github.com/TETRA326/dustr/releases/latest/download/Dustr-Setup.exe)**, then open `Dustr-Setup.exe`.
 
-Or pick a specific version from [Releases](../../releases), then run `Dustr-Setup.exe`.
-It installs per user (no admin), adds a Start menu shortcut and the right-click menu; a desktop shortcut is optional.
-The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
+1. If Windows shows "Windows protected your PC", click **More info → Run anyway**. (The installer isn't code-signed yet.)
+2. Click **Install**. No administrator rights are needed.
 
-When Dustr is started from the right-click menu, it closes on its own a few seconds after the summary.
+Older versions are on the [Releases](../../releases) page.
 
 ## Usage
-Open the app and select a directory, or right-click a folder in Explorer → **Show more options** → **Dustr**:
-```
-Dustr
-└ Dust only this directory
-└ Dust all recursive folders
-```
-You may be prompted a few times, then get to swiping your files.
 
-## Controls (defaults, all configurable)
+1. **Start Dustr** in one of two ways:
+   - Right-click a folder (or empty space inside one) in File Explorer, choose **Show more options → Dustr**, then:
+     - **Dust only this directory**: just the files in that folder.
+     - **Dust all recursive folders**: that folder and every folder inside it.
+   - Or open Dustr from the Start menu and click **Choose folder**.
+2. **Answer any questions.** The first time, Dustr reminds you that it changes real files. It may also ask whether to include hidden files.
+3. **Sort your files.** Each file is shown one at a time. Press an arrow key:
 
-| Key | Action |
-| --- | --- |
-| ↑ / W | Move to a folder (asked on the first move of each session, or a fixed folder) |
-| → / D | Keep |
-| ← / A | Move to the Recycle Bin |
-| ↓ / S | Permanently delete (press twice within 3 s; a quick double tap works) |
-| Ctrl+Z | Undo last swipe (not available for permanent deletes) |
-| Esc | End the session and show the summary |
+   | Key | What happens |
+   | --- | --- |
+   | → | **Keep** it where it is |
+   | ← | Send it to the **Recycle Bin** |
+   | ↑ | **Move** it to another folder (Dustr asks which folder the first time) |
+   | ↓ ↓ | **Delete it permanently** (press twice; this cannot be undone) |
 
-Any direction can be set to *Nothing*.
+   Made a mistake? Press **Ctrl+Z** or click **Undo**. Press **Esc** to stop at any time.
+4. **Done.** Dustr shows a short summary of what you did. If you started it from the right-click menu, it closes by itself.
 
-**Recursive mode** goes through the chosen folder, then each subfolder (depth first). Before each subfolder a short countdown appears:
-→ skips that folder's files but still visits its subfolders, ← skips the folder and everything under it, Enter starts immediately.
-Subfolders left completely empty can be removed (Ask / Remove / Keep).
+WASD works too (W = ↑, A = ←, S = ↓, D = →). Every key can be changed or turned off in **Settings** (the icon in the top-right corner).
+
+### Going through subfolders
+
+With **Dust all recursive folders**, Dustr shows the name of each next folder for a few seconds before starting it:
+press **→** to skip that folder's files (its subfolders are still visited), **←** to skip it and everything inside it, or **Enter** to start right away.
+If a folder ends up empty, Dustr can offer to remove it.
 
 ## Previews
 
