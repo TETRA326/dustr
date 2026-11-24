@@ -1,14 +1,9 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" width="1024" height="1024">
-  <rect x="32" y="32" width="960" height="960" rx="216" fill="#2F5D8C"/>
-  <!-- motion lines: the file is being swiped to the right -->
-  <g stroke="#F4F1EA" stroke-linecap="round" stroke-width="44" opacity="0.55">
-    <line x1="170" y1="420" x2="330" y2="420"/>
-    <line x1="210" y1="520" x2="330" y2="520"/>
-    <line x1="250" y1="620" x2="330" y2="620"/>
-  </g>
-  <!-- file -->
-  <g transform="rotate(8 600 512)">
-    <path d="M420 250 H660 L790 380 V760 a32 32 0 0 1 -32 32 H420 a32 32 0 0 1 -32 -32 V282 a32 32 0 0 1 32 -32 Z" fill="#F4F1EA"/>
-    <path d="M660 250 V350 a30 30 0 0 0 30 30 H790 Z" fill="#C9C2B2"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-64 -64 128 128" width="512" height="512">
+  <g fill="none" stroke="#8b9099" stroke-width="6" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="-24" y="-30" width="48" height="60" rx="10"/>
+    <path d="M0 -10Q0 4 14 4Q0 4 0 18Q0 4 -14 4Q0 4 0 -10Z" stroke-width="5"/>
+    <path d="M13 -24Q13 -18 19 -18Q13 -18 13 -12Q13 -18 7 -18Q13 -18 13 -24Z" stroke-width="3"/>
+    <path d="M4 -25Q4 -22 7 -22Q4 -22 4 -19Q4 -22 1 -22Q4 -22 4 -25Z" stroke-width="2.5"/>
+    <path d="M-9 -50L0 -59L9 -50" stroke="#3569b8"/><path d="M50 -9L59 0L50 9" stroke="#2f8a50"/><path d="M-9 50L0 59L9 50" stroke="#c2443a"/><path d="M-50 -9L-59 0L-50 9" stroke="#b98a12"/>
   </g>
 </svg>
