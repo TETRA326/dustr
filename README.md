@@ -19,7 +19,7 @@ Dustr
 | ↑ / W | Move to a folder (asked on the first move of each session, or a fixed folder) |
 | → / D | Keep |
 | ← / A | Move to the Recycle Bin |
-| ↓ / S | Permanently delete (press twice within 3 s) |
+| ↓ / S | Permanently delete (press twice within 3 s; a quick double tap works) |
 | Ctrl+Z | Undo last swipe (not available for permanent deletes) |
 | Esc | End the session and show the summary |
 
@@ -48,9 +48,11 @@ Settings are stored in `%APPDATA%\io.github.dustr\settings.json`.
 
 ## Install
 
-Download the installer from [Releases](../../releases) (or the latest *Build* workflow run) and run it.
-It installs per user (no admin) and adds the right-click menu. The installer is not code-signed yet,
-so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
+Download `Dustr-Setup-x.y.z.exe` from [Releases](../../releases) (or the latest *Build* workflow run) and run it.
+It installs per user (no admin), adds a Start menu shortcut and the right-click menu; a desktop shortcut is optional.
+The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
+
+When Dustr is started from the right-click menu, it closes on its own a few seconds after the summary.
 
 ## Build from source
 
@@ -59,7 +61,8 @@ Requirements: [Rust](https://rustup.rs), Node.js 18+, and on Windows the WebView
 ```
 npm install
 npm run dev      # run in development
-npm run build    # installer in src-tauri/target/release/bundle/nsis
+npx tauri build --no-bundle
+ISCC /DAppVersion=0.2.0 installer\dustr.iss   # Inno Setup 6, installer goes to dist/
 ```
 
 Linux builds also compile (`sudo apt install libwebkit2gtk-4.1-dev librsvg2-dev`); the right-click menu and
@@ -76,7 +79,7 @@ src-tauri/src/
   office.rs           built-in docx/xlsx/pptx reader
   shellmenu.rs        Explorer context menu (HKCU)
   settings.rs         settings file
-src-tauri/windows/hooks.nsh   installer hooks for the context menu
+installer/dustr.iss   Windows installer (Inno Setup), incl. the context menu
 ```
 
 ## License

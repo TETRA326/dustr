@@ -407,33 +407,50 @@ async function showCard() {
   $("progress").textContent = `${session.index + 1} of ${session.files.length}`;
   $("preview").style.flexDirection = "";
   updateUndoButton();
-  anim(card, [{ opacity: 0, transform: "scale(0.97)" }, { opacity: 1, transform: "scale(1)" }], { duration: 140, easing: "ease-out" });
+  anim(card, [{ opacity: 0, transform: "scale(0.97)" }, { opacity: 1, transform: "scale(1)" }], { duration: 90, easing: "ease-out" });
   await renderPreview(f);
   preloadAhead();
 }
 
 // ---------- animations ----------
-async function animateOut(action, dir) {
+// The outgoing card is cloned into the effects layer and animated there, so the
+// next card is ready immediately and directions can be pressed back to back.
+function makeGhost() {
   const card = $("card");
-  if (!animOn()) return;
+  card.getAnimations().forEach((a) => a.cancel());
+  if (!animOn()) return null;
+  const r = card.getBoundingClientRect();
+  const g = card.cloneNode(true);
+  g.removeAttribute("id");
+  g.querySelectorAll("[id]").forEach((n) => n.removeAttribute("id"));
+  g.querySelectorAll("video, audio, iframe").forEach((n) => n.replaceWith(el("div")));
+  Object.assign(g.style, {
+    position: "fixed", left: `${r.left}px`, top: `${r.top}px`, width: `${r.width}px`, height: `${r.height}px`,
+    maxWidth: "none", maxHeight: "none", margin: "0",
+  });
+  $("fx-layer").append(g);
+  return g;
+}
+
+async function animateOut(g, action, dir) {
   const [vx, vy] = VEC[dir];
   const W = window.innerWidth, H = window.innerHeight;
   if (action === "move") {
-    await anim(card, [{ transform: "scale(1)" }, { transform: "scale(0.94)" }], { duration: 70, easing: "ease-out" });
-    contrails(card, vx, vy);
-    await anim(card, [
-      { transform: "scale(0.94) translate(0,0)", opacity: 1 },
-      { transform: `scale(0.8) translate(${vx * W * 1.2}px, ${vy * H * 1.2}px)`, opacity: 1 },
-    ], { duration: 260, easing: "cubic-bezier(.5,0,.9,.4)" });
+    contrails(g, vx, vy);
+    await anim(g, [
+      { transform: "scale(0.96) translate(0,0)" },
+      { transform: `scale(0.85) translate(${vx * W * 1.2}px, ${vy * H * 1.2}px)` },
+    ], { duration: 190, easing: "cubic-bezier(.5,0,.9,.4)" });
   } else if (action === "delete") {
-    await trashAnimation(card, dir);
+    await trashAnimation(g, dir);
   } else {
     const spin = (vx || vy) * 28;
-    await anim(card, [
+    await anim(g, [
       { transform: "translate(0,0) rotate(0deg)", opacity: 1 },
       { transform: `translate(${vx * W}px, ${vy * H}px) rotate(${spin}deg)`, opacity: 0.6 },
-    ], { duration: 340, easing: "cubic-bezier(.4,0,.8,.5)" });
+    ], { duration: 210, easing: "cubic-bezier(.4,0,.8,.5)" });
   }
+  g.remove();
 }
 
 function contrails(card, vx, vy) {
@@ -462,7 +479,7 @@ function contrails(card, vx, vy) {
       { transform: `${axis}(0)`, opacity: 0.9 },
       { transform: `${axis}(1)`, opacity: 0.6, offset: 0.5 },
       { transform: `${axis}(1)`, opacity: 0 },
-    ], { duration: 420, delay: i * 30, easing: "ease-out" }).finished.finally(() => t.remove());
+    ], { duration: 260, delay: i * 20, easing: "ease-out" }).finished.finally(() => t.remove());
   }
 }
 
@@ -478,16 +495,17 @@ async function trashAnimation(card, dir) {
   const tr = chip.getBoundingClientRect();
   const dx = tr.left + tr.width / 2 - (cr.left + cr.width / 2);
   const dy = tr.top + tr.height / 2 - (cr.top + cr.height / 2);
-  const grow = anim(chip, [{ transform: "scale(1)" }, { transform: "scale(1.7)" }], { duration: 160, easing: "ease-out" });
-  const open = lid ? anim(lid, [{ transform: "rotate(0deg)" }, { transform: "rotate(40deg)" }], { duration: 160, easing: "ease-out" }) : null;
-  await Promise.all([grow, open]);
+  chip.getAnimations().forEach((a) => a.cancel());
+  if (lid) lid.getAnimations().forEach((a) => a.cancel());
+  const grow = anim(chip, [{ transform: "scale(1)" }, { transform: "scale(1.6)" }], { duration: 80, easing: "ease-out" });
+  const open = lid ? anim(lid, [{ transform: "rotate(0deg)" }, { transform: "rotate(40deg)" }], { duration: 80, easing: "ease-out" }) : null;
   await anim(card, [
     { transform: "translate(0,0) scale(1)", opacity: 1 },
     { transform: `translate(${dx}px, ${dy}px) scale(0.04)`, opacity: 0.5 },
-  ], { duration: 320, easing: "cubic-bezier(.55,0,.85,.45)" });
-  const close = lid ? anim(lid, [{ transform: "rotate(40deg)" }, { transform: "rotate(0deg)" }], { duration: 140, easing: "ease-in" }) : null;
-  await close;
-  await anim(chip, [{ transform: "scale(1.7)" }, { transform: "scale(1)" }], { duration: 160, easing: "ease-out" });
+  ], { duration: 190, easing: "cubic-bezier(.55,0,.85,.45)" });
+  await Promise.all([grow, open]);
+  if (lid) await anim(lid, [{ transform: "rotate(40deg)" }, { transform: "rotate(0deg)" }], { duration: 70, easing: "ease-in" });
+  await anim(chip, [{ transform: "scale(1.6)" }, { transform: "scale(1)" }], { duration: 90, easing: "ease-out" });
   chip.getAnimations().forEach((a) => a.cancel());
   if (lid) lid.getAnimations().forEach((a) => a.cancel());
 }
@@ -497,7 +515,7 @@ async function bounceDown(dir) {
   const [vx, vy] = VEC[dir];
   const { lid } = trashParts(dir);
   if (lid) {
-    anim(lid, [{ transform: "rotate(0deg)" }, { transform: "rotate(25deg)" }, { transform: "rotate(0deg)" }], { duration: 380 })
+    anim(lid, [{ transform: "rotate(0deg)" }, { transform: "rotate(25deg)" }, { transform: "rotate(0deg)" }], { duration: 260 })
       .then(() => lid.getAnimations().forEach((a) => a.cancel()));
   }
   await anim(card, [
@@ -505,8 +523,7 @@ async function bounceDown(dir) {
     { transform: `translate(${vx * 26}px, ${vy * 26}px)`, offset: 0.4 },
     { transform: `translate(${vx * -4}px, ${vy * -4}px)`, offset: 0.75 },
     { transform: "translate(0,0)" },
-  ], { duration: 380, easing: "ease-out" });
-  card.getAnimations().forEach((a) => a.cancel());
+  ], { duration: 260, easing: "ease-out" });
 }
 
 // ---------- actions ----------
@@ -533,14 +550,8 @@ async function perform(action, dir) {
       const ms = settings.deleteConfirmSeconds * 1000;
       session.pendingDelete = { path: f.path, until: now + ms };
       toast(`Press ${keyLabel(dir)} again to permanently delete`, { bar: Math.max(ms, 1) });
-      if (animOn()) {
-        session.busy = true;
-        const wasNative = native.current;
-        if (wasNative) await native.detach();
-        await bounceDown(dir);
-        session.busy = false;
-        if (wasNative && session.file === f) { $("preview").innerHTML = ""; await native.show(wasNative); }
-      }
+      // Never blocks: a quick second press goes straight through.
+      if (animOn() && !native.current) bounceDown(dir);
       return false;
     }
     hideToast();
@@ -574,7 +585,7 @@ async function perform(action, dir) {
 }
 
 async function onDirection(dir) {
-  if (session.busy || !session.file) return;
+  if (!session.file || !session.resolveAction) return;
   const action = settings[dir];
   flashZone(dir);
   if (action === "none") return;
@@ -584,16 +595,41 @@ async function onDirection(dir) {
     if (!done) return;
     const f = session.file;
     await native.detach();
-    await animateOut(action, dir);
+    const ghost = makeGhost();
     native.release(f.path);
-    session.resolveAction && session.resolveAction("next");
+    const next = session.resolveAction;
+    session.resolveAction = null;
+    if (next) next("next");
+    if (ghost) animateOut(ghost, action, dir);
   } finally {
     session.busy = false;
   }
 }
 
+// Key presses are queued and handled in order, so a direction can be spammed.
+const inputQueue = [];
+let draining = false;
+function queueDirection(dir) {
+  if (inputQueue.length < 12) inputQueue.push(dir);
+  drain();
+}
+async function drain() {
+  if (draining) return;
+  draining = true;
+  try {
+    while (inputQueue.length) {
+      // Wait (briefly) for the next card to be ready to receive input.
+      for (let i = 0; i < 400 && !session.resolveAction && session.active && !session.aborted && $("overlay").hidden; i++) await sleep(5);
+      if (!$("overlay").hidden || !session.resolveAction || session.aborted) { inputQueue.length = 0; break; }
+      await onDirection(inputQueue.shift());
+    }
+  } finally {
+    draining = false;
+  }
+}
+
 async function undo() {
-  if (session.busy) return;
+  if (session.busy || draining) return;
   const e = session.undo[session.undo.length - 1];
   if (!e || e.type === "delete") return;
   session.busy = true;
@@ -607,7 +643,9 @@ async function undo() {
     if (e.type === "recycle") { c.recycled--; c.bytesFreed -= e.file.size; }
     if (e.type === "keep" || e.type === "recycle" || e.type === "move") {
       if (e.dir === session.dir && session.resolveAction) {
-        session.resolveAction({ undoTo: e.index });
+        const back = session.resolveAction;
+        session.resolveAction = null;
+        back({ undoTo: e.index });
       } else {
         toast(`Restored ${e.file.name}`);
         updateUndoButton();
@@ -674,7 +712,7 @@ async function dustFiles(dir, files) {
   $("folder-name").textContent = basename(dir);
   $("folder-name").title = dir;
   while (session.index < files.length && !session.aborted) {
-    await showCard();
+    showCard(); // input is accepted while the preview is still loading
     const r = await new Promise((res) => { session.resolveAction = res; });
     session.resolveAction = null;
     if (r === "abort") break;
@@ -766,9 +804,9 @@ async function dustTree(dir, isRoot) {
   }
 }
 
-async function startSession(root, recursive) {
+async function startSession(root, recursive, fromShell = false) {
   Object.assign(session, {
-    active: true, aborted: false, busy: false, root, recursive,
+    active: true, aborted: false, busy: false, root, recursive, fromShell,
     dir: root, files: [], index: 0, file: null, counts: newCounts(),
     undo: [], moveDest: null, decisions: {}, pendingDelete: null,
   });
@@ -790,7 +828,7 @@ async function startSession(root, recursive) {
 function endSession() {
   session.aborted = true;
   if (session.cancelModal && !$("overlay").hidden) session.cancelModal();
-  if (session.resolveAction) session.resolveAction("abort");
+  if (session.resolveAction) { const a = session.resolveAction; session.resolveAction = null; a("abort"); }
 }
 
 function showSummary() {
@@ -809,8 +847,32 @@ function showSummary() {
   }
   row("Space freed", fmtSize(Math.max(0, c.bytesFreed)));
   $("summary-folder").textContent = session.root;
+  $("summary-done").textContent = session.fromShell ? "Close" : "Done";
+  $("summary-keep").hidden = !session.fromShell;
+  $("summary-note").hidden = !session.fromShell;
   showView("summary");
   $("summary-done").focus();
+  if (session.fromShell) {
+    // Started from the right-click menu: close on our own after a moment.
+    let n = 5;
+    const tick = () => { $("summary-note").textContent = `Closing in ${n} s`; };
+    tick();
+    summaryTimer = setInterval(() => { n--; if (n <= 0) closeApp(); else tick(); }, 1000);
+  }
+}
+
+let summaryTimer = null;
+function closeApp() {
+  clearInterval(summaryTimer);
+  native.releaseAll();
+  appWindow.close().catch(() => {});
+}
+function keepOpen() {
+  clearInterval(summaryTimer);
+  session.fromShell = false;
+  $("summary-done").textContent = "Done";
+  $("summary-keep").hidden = true;
+  $("summary-note").hidden = true;
 }
 
 // ---------- settings view ----------
@@ -940,6 +1002,7 @@ async function renderSettings() {
 document.addEventListener("keydown", (e) => {
   if (modalKeyHandler) { modalKeyHandler(e); return; }
   if (!$("settings").hidden) { if (e.key === "Escape") closeSettings(); return; }
+  if (!$("summary").hidden) { if (e.key === "Escape" && session.fromShell) closeApp(); return; }
   if ($("session").hidden) return;
   if (e.key === "Escape") { e.preventDefault(); endSession(); return; }
   if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "z") { e.preventDefault(); undo(); return; }
@@ -947,7 +1010,7 @@ document.addEventListener("keydown", (e) => {
   if (dir) {
     e.preventDefault();
     if (e.repeat) return; // holding a key must never confirm a delete
-    onDirection(dir);
+    queueDirection(dir);
   }
 });
 
@@ -971,7 +1034,8 @@ async function boot() {
   $("settings-back").onclick = closeSettings;
   $("session-end").onclick = endSession;
   $("choose-folder").onclick = chooseFolder;
-  $("summary-done").onclick = () => showView("home");
+  $("summary-done").onclick = () => (session.fromShell ? closeApp() : showView("home"));
+  $("summary-keep").onclick = keepOpen;
   $("undo").onclick = undo;
   $("open-location").onclick = () => session.file && invoke("open_location", { path: session.file.path }).catch((e) => toast(String(e)));
   // In a session, clicked buttons must not keep focus (Enter/Space would re-trigger them).
@@ -984,9 +1048,27 @@ async function boot() {
   settings = await invoke("get_settings");
   applyTheme();
 
+  const version = await window.__TAURI__.app.getVersion().catch(() => "0");
+  if (settings.warnedVersion !== version) {
+    for (const v of document.querySelectorAll(".view")) v.hidden = true;
+    await showDialog({
+      title: "Dustr changes real files",
+      body: el("div", { class: "notice" },
+        el("p", {}, "Every swipe acts on the actual file on your computer:"),
+        el("ul", {},
+          el("li", {}, el("strong", {}, "Recycle"), " moves the file to the Recycle Bin."),
+          el("li", {}, el("strong", {}, "Delete"), " removes the file permanently. It cannot be undone or recovered."),
+          el("li", {}, el("strong", {}, "Move"), " moves the file to another folder.")),
+        el("p", { class: "muted" }, "Dustr is free software provided as is, without any warranty. Use it at your own risk.")),
+      buttons: [{ label: "I understand", value: "ok", primary: true, hint: "Enter", keys: (e) => e.key === "Enter" }],
+    });
+    settings.warnedVersion = version;
+    await saveSettings();
+  }
+
   const launch = await invoke("launch_args").catch(() => ({}));
   if (launch && launch.path) {
-    startSession(launch.path, !!launch.recursive);
+    startSession(launch.path, !!launch.recursive, true);
   } else {
     showView("home");
   }

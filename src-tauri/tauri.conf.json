@@ -2,7 +2,7 @@
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "Dustr",
   "mainBinaryName": "Dustr",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "identifier": "io.github.dustr",
   "build": {
     "frontendDist": "../src"
@@ -30,7 +30,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": ["nsis"],
+    "targets": ["deb", "appimage"],
     "publisher": "Dustr contributors",
     "license": "GPL-3.0-only",
     "shortDescription": "Swipe through a folder to clean it out",
@@ -41,13 +41,6 @@
       "icons/128x128@2x.png",
       "icons/icon.icns",
       "icons/icon.ico"
-    ],
-    "windows": {
-      "nsis": {
-        "installMode": "currentUser",
-        "installerIcon": "icons/icon.ico",
-        "installerHooks": "./windows/hooks.nsh"
-      }
-    }
+    ]
   }
 }

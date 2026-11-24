@@ -35,6 +35,8 @@ pub struct Settings {
     pub animations: bool,
     /// Use Windows preview handlers for Office and other documents.
     pub native_previews: bool,
+    /// App version for which the "this deletes real files" notice was accepted.
+    pub warned_version: String,
 }
 
 impl Default for Settings {
@@ -56,9 +58,10 @@ impl Default for Settings {
             hidden_files: "ask".into(),
             system_files: "ask".into(),
             empty_folders: "ask".into(),
-            splash_seconds: 3.0,
+            splash_seconds: 5.0,
             animations: true,
             native_previews: true,
+            warned_version: String::new(),
         }
     }
 }

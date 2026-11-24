@@ -1,6 +1,6 @@
 [package]
 name = "dustr"
-version = "0.1.0"
+version = "0.2.0"
 description = "Dustr - swipe through a folder to clean it out"
 license = "GPL-3.0-only"
 edition = "2021"
