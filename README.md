@@ -4,13 +4,6 @@
 
 FOSS app vibe-coded to make file management more intuative.
 
-Right-click a folder in Explorer → **Show more options** → **Dustr**:
-
-```
-Dustr
-└ Dust only this directory
-└ Dust all recursive folders
-```
 ## Install
 
 **[Download the latest version](https://github.com/TETRA326/dustr/releases/latest/download/Dustr-Setup.exe)**
@@ -20,6 +13,15 @@ It installs per user (no admin), adds a Start menu shortcut and the right-click 
 The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
 
 When Dustr is started from the right-click menu, it closes on its own a few seconds after the summary.
+
+## Usage
+Open the app and select a directory, or right-click a folder in Explorer → **Show more options** → **Dustr**:
+```
+Dustr
+└ Dust only this directory
+└ Dust all recursive folders
+```
+You may be prompted a few times, then get to swiping your files.
 
 ## Controls (defaults, all configurable)
 
