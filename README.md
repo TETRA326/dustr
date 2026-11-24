@@ -67,7 +67,7 @@ Requirements: [Rust](https://rustup.rs), Node.js 18+, and on Windows the WebView
 npm install
 npm run dev      # run in development
 npx tauri build --no-bundle
-ISCC /DAppVersion=0.2.0 installer\dustr.iss   # Inno Setup 6, installer goes to dist/
+ISCC /DAppVersion=0.3.0 installer\dustr.iss   # Inno Setup 6, installer goes to dist/
 ```
 
 Linux builds also compile (`sudo apt install libwebkit2gtk-4.1-dev librsvg2-dev`); the right-click menu and
