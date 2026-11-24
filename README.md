@@ -1,8 +1,8 @@
-<p align="center"><img src="assets/logo.svg" width="96" alt="Dustr logo"></p>
+<p align="center"><img src="assets/logo.svg" width="120" alt="Dustr logo"></p>
 
 # Dustr
 
-Free, open-source app that makes cleaning out folders quick: one file at a time, one key press per decision.
+FOSS app vibe-coded to make file management more intuative.
 
 Right-click a folder in Explorer → **Show more options** → **Dustr**:
 
@@ -11,6 +11,13 @@ Dustr
 └ Dust only this directory
 └ Dust all recursive folders
 ```
+## Install
+
+Download `Dustr-Setup-x.y.z.exe` from [Releases](../../releases) (or the latest *Build* workflow run) and run it.
+It installs per user (no admin), adds a Start menu shortcut and the right-click menu; a desktop shortcut is optional.
+The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
+
+When Dustr is started from the right-click menu, it closes on its own a few seconds after the summary.
 
 ## Controls (defaults, all configurable)
 
@@ -45,14 +52,6 @@ delete confirmation and time window (0–10 s) · sort order (default: oldest mo
 (Ask / Include / Skip) · empty folders · next-folder countdown · document previews · Explorer right-click menu.
 
 Settings are stored in `%APPDATA%\io.github.dustr\settings.json`.
-
-## Install
-
-Download `Dustr-Setup-x.y.z.exe` from [Releases](../../releases) (or the latest *Build* workflow run) and run it.
-It installs per user (no admin), adds a Start menu shortcut and the right-click menu; a desktop shortcut is optional.
-The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
-
-When Dustr is started from the right-click menu, it closes on its own a few seconds after the summary.
 
 ## Build from source
 
