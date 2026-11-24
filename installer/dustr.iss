@@ -34,7 +34,8 @@ CloseApplications=yes
 Compression=lzma2/max
 SolidCompression=yes
 OutputDir=..\dist
-OutputBaseFilename=Dustr-Setup-{#AppVersion}
+; Fixed name so releases/latest/download/Dustr-Setup.exe always works.
+OutputBaseFilename=Dustr-Setup
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"

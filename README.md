@@ -13,7 +13,9 @@ Dustr
 ```
 ## Install
 
-Download `Dustr-Setup-x.y.z.exe` from [Releases](../../releases) (or the latest *Build* workflow run) and run it.
+**[Download the latest version](https://github.com/TETRA326/dustr/releases/latest/download/Dustr-Setup.exe)**
+
+Or pick a specific version from [Releases](../../releases), then run `Dustr-Setup.exe`.
 It installs per user (no admin), adds a Start menu shortcut and the right-click menu; a desktop shortcut is optional.
 The installer is not code-signed yet, so Windows SmartScreen may ask for confirmation (**More info → Run anyway**).
 
